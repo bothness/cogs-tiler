@@ -40,7 +40,7 @@
         <h2>COGS Data Tiler</h2>
         <p><strong>Tiles loaded:</strong> <span id="tiles"></span></p>
         <p><strong>Areas loaded:</strong> <span id="areas"></span></p>
-        <small>This demo loads data in tiled chunks from the <a href="http://statistics.data.gov.uk/sparql" target="_blank">ONS Geography Linked Data API</a>.</small>
+        <small>This demo loads data in tiled chunks from the <a href="http://statistics.data.gov.uk/sparql" target="_blank">ONS Geography Linked Data API</a>. (Areas turn green once data is loaded from the API.)</small>
     </div>
 </body>
 
@@ -170,7 +170,7 @@
                 "fill-color": ['case',
                     ['!=', ['feature-state', 'loaded'], null],
                     'rgba(0, 255, 0, 0.2)',
-                    'rgba(0, 0, 0, 0)'
+                    'rgba(255, 0, 0, 0.2)'
                 ]
             }
         }, 'boundary_country');
