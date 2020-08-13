@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>COGS Data Tiler (Output Areas)</title>
+    <title>COGS Data Tiler (LSOAs)</title>
     <link href='https://api.mapbox.com/mapbox-gl-js/v1.11.1/mapbox-gl.css' rel='stylesheet' />
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -41,7 +41,7 @@
     <div id="info">
         <h2>COGS Data Tiler</h2>
         <p><strong>Tiles loaded:</strong> <span id="tiles"></span></p>
-        <p><strong>OAs loaded:</strong> <span id="areas"></span></p>
+        <p><strong>LSOAs loaded:</strong> <span id="areas"></span></p>
         <small>This demo loads data in tiled chunks from the <a href="http://statistics.data.gov.uk/sparql" target="_blank">ONS Geography Linked Data API</a>. (Areas turn green once data is loaded from the API.)</small>
     </div>
 </body>
@@ -156,8 +156,8 @@
         // Add boundaries tileset
         map.addSource('bounds', {
             "type": "vector",
-            "promoteId": { "OA_bound_ethnicity": "oa11cd" },
-            "tiles": ["https://cdn.ons.gov.uk/maptiles/t9/{z}/{x}/{y}.pbf"],
+            "promoteId": { "boundaries": "lsoa11cd" },
+            "tiles": ["https://cdn.ons.gov.uk/maptiles/t26/boundaries/{z}/{x}/{y}.pbf"],
             "minzoom": 8,
             "maxzoom": 14
         });
@@ -167,7 +167,7 @@
             id: 'bounds',
             type: 'fill',
             source: 'bounds',
-            'source-layer': 'OA_bound_ethnicity',
+            'source-layer': 'boundaries',
             "paint": {
                 "fill-color": ['case',
                     ['!=', ['feature-state', 'loaded'], null],
@@ -181,7 +181,7 @@
             id: 'boundslines',
             type: 'line',
             source: 'bounds',
-            'source-layer': 'OA_bound_ethnicity',
+            'source-layer': 'boundaries',
             "paint": {
                 "line-opacity": [
                     'case',
@@ -204,13 +204,13 @@
             if (e.features.length > 0) {
                 if (hoveredId) {
                     map.setFeatureState(
-                        { source: 'bounds', sourceLayer: 'OA_bound_ethnicity', id: hoveredId },
+                        { source: 'bounds', sourceLayer: 'boundaries', id: hoveredId },
                         { hover: false }
                     );
                 }
                 hoveredId = e.features[0].id;
                 map.setFeatureState(
-                    { source: 'bounds', sourceLayer: 'OA_bound_ethnicity', id: hoveredId },
+                    { source: 'bounds', sourceLayer: 'boundaries', id: hoveredId },
                     { hover: true }
                 );
 
@@ -221,7 +221,7 @@
 
                 let state = map.getFeatureState({
                     source: 'bounds',
-                    sourceLayer: 'OA_bound_ethnicity',
+                    sourceLayer: 'boundaries',
                     id: code
                 });
 
@@ -241,7 +241,7 @@
         map.on('mouseleave', 'bounds', function (e) {
             if (hoveredId) {
                 map.setFeatureState(
-                    { source: 'bounds', sourceLayer: 'OA_bound_ethnicity', id: hoveredId },
+                    { source: 'bounds', sourceLayer: 'boundaries', id: hoveredId },
                     { hover: false }
                 );
             }
@@ -257,7 +257,7 @@
             if (data[i].code) {
                 map.setFeatureState({
                     source: 'bounds',
-                    sourceLayer: 'OA_bound_ethnicity',
+                    sourceLayer: 'boundaries',
                     id: data[i].code
                 }, {
                     loaded: true,
@@ -272,14 +272,14 @@
         let query = encodeURIComponent(`SELECT DISTINCT ?code ?area
 WHERE {
 ?postcode <http://publishmydata.com/def/ontology/foi/memberOf> <http://statistics.data.gov.uk/def/geography/collection/postcodes> ;
-<http://statistics.data.gov.uk/def/spatialrelations/within#outputarea> ?oa ;
+<http://statistics.data.gov.uk/def/spatialrelations/within#superoutputarealowerlayer> ?lsoa ;
 <http://www.w3.org/2003/01/geo/wgs84_pos#lat> ?lat ;
 <http://www.w3.org/2003/01/geo/wgs84_pos#long> ?lng .
-?oa <http://www.w3.org/2000/01/rdf-schema#label> ?code ;
+?lsoa <http://www.w3.org/2000/01/rdf-schema#label> ?code ;
 <http://statistics.data.gov.uk/def/measurement#hasExtentOfTheRealmHectarage> ?area .
 FILTER (?lat > ${bbox[1]} && ?lat < ${bbox[3]}  && ?lng > ${bbox[0]} && ?lng < ${bbox[2]}) .
 }
-LIMIT 40000`);
+LIMIT 15000`);
 
         fetch(api + query)
             .then(response => response.text())
